@@ -9,9 +9,18 @@ startup
 {
 	vars.newRun = false;
 	vars.startOffset = 137f/60f;
+	vars.buildSpatList = false;
+	vars.spatSplits = new List<int>();
 
-	settings.Add("mainMenuReset", false, "Reset on Main Menu");
-	settings.Add("newGameReset", true, "Reset on New Game");
+	settings.Add("reset", true, "Reset");
+	settings.Add("mainMenuReset", false, "Reset on Main Menu", "reset");
+	settings.Add("newGameReset", true, "Reset on New Game", "reset");
+
+	settings.Add("spatSplit", false, "Split on certain number of spatulas");
+	for(int i = 1; i < 100; i++)
+	{
+	    settings.Add("spat"+(i).ToString(), false, (i).ToString()+" spatulas", "spatSplit");
+	}
 
 	vars.mainMenu = "/Game/Maps/MainMenu/MainMenu_P";
 	vars.introCutscene = "/Game/Maps/IntroCutscene/IntroCutscene_P";
@@ -31,6 +40,21 @@ startup
 		{
 			timer.CurrentTimingMethod = TimingMethod.GameTime;
 		}
+	}
+}
+
+update
+{
+	if (vars.buildSpatList)
+	{
+		vars.buildSpatList = false;
+		vars.spatSplits = new List<int>();
+		for(int i = 1; i < 100; i++)
+		{
+			if(settings["spat"+i.ToString()])
+				vars.spatSplits.Add(i);
+		}
+		print("Spatulas to split for: "+string.Join(", ", vars.spatSplits));
 	}
 }
 
@@ -64,6 +88,8 @@ start
 {
 	if(!old.isLoading && current.isLoading && current.map == vars.introCutscene)
 	{
+		if(settings["spatSplit"])
+			vars.buildSpatList = true;
 		vars.newRun = true;
 		return true;
 	}
@@ -76,5 +102,14 @@ isLoading
 
 split
 {
+	if(current.spatCount > old.spatCount && vars.spatSplits.Count > 0)
+	{
+		if(current.spatCount >= vars.spatSplits[0])
+		{
+			print("Split for "+vars.spatSplits[0]+" spats");
+			vars.spatSplits.RemoveAt(0);
+			return true;
+		}
+	}
 	return old.spatCount != current.spatCount && current.map == vars.finalLevel;
 }
