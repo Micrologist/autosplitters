@@ -8,7 +8,7 @@ state("Pineapple-Win64-Shipping")
 startup
 {
 	vars.newRun = false;
-	vars.startOffset = 137f/60f;
+	vars.startOffset = 138f/60f;
 	vars.buildSpatList = false;
 	vars.spatSplits = new List<int>();
 
@@ -78,7 +78,7 @@ reset
 
 	if(settings["newGameReset"] && !reset)
 	{
-		reset = !old.isLoading && current.isLoading && current.map == vars.introCutscene;
+		reset = old.map != current.map && current.map == vars.introCutscene;
 	}
 
 	return reset;
@@ -86,7 +86,7 @@ reset
 
 start
 {
-	if(!old.isLoading && current.isLoading && current.map == vars.introCutscene)
+	if(old.isLoading && !current.isLoading && current.map == vars.introCutscene)
 	{
 		if(settings["spatSplit"])
 			vars.buildSpatList = true;
